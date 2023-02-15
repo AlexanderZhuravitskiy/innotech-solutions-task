@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -54,7 +55,7 @@ public class Train implements Serializable {
             joinColumns = @JoinColumn(name = "trains_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> users;
+    private List<User> users = new ArrayList<>();
 
     public Train(String departurePoint, String arrivalPoint, String departureTime, String arrivalTime, String date, Integer price, Integer freePlaces) {
         this.departurePoint = departurePoint;

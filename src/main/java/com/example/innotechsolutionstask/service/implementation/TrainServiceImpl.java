@@ -6,7 +6,7 @@ import com.example.innotechsolutionstask.exceptions.ValueEntryException;
 import com.example.innotechsolutionstask.repos.TrainRepo;
 import com.example.innotechsolutionstask.service.TrainService;
 import com.example.innotechsolutionstask.web.constant.WebConstant;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@Transactional
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TrainServiceImpl implements TrainService {
     private final TrainRepo trainRepo;
 
@@ -53,6 +52,7 @@ public class TrainServiceImpl implements TrainService {
     }
 
     @Override
+    @Transactional
     public void addTrain(Train train) {
         trainValid(train);
         log.info("Saving train: {}", train);
@@ -60,12 +60,14 @@ public class TrainServiceImpl implements TrainService {
     }
 
     @Override
+    @Transactional
     public void updateTrain(Train train) {
         log.info("Saving updated train: {}", train);
         trainRepo.save(train);
     }
 
     @Override
+    @Transactional
     public void deleteTrain(Train train) {
         log.info("Deleting train: {}", train);
         trainRepo.delete(train);

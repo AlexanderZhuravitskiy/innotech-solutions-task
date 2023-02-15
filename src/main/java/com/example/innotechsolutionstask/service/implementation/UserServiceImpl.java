@@ -6,11 +6,12 @@ import com.example.innotechsolutionstask.domain.User;
 import com.example.innotechsolutionstask.exceptions.NotFoundException;
 import com.example.innotechsolutionstask.repos.UserRepo;
 import com.example.innotechsolutionstask.service.UserService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@Transactional
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepo userRepo;
 
@@ -46,6 +46,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setActive(true);
@@ -55,6 +56,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void addUserTickets(Train train, User user) {
         if (train.getFreePlaces() > 0 && train.getPrice() <= user.getBalance()) {
             train.setFreePlaces(train.getFreePlaces() - 1);
@@ -71,6 +73,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void updatePassword(User user, String password) {
         if (!password.isBlank()) {
             user.setPassword(passwordEncoder.encode(password));
@@ -79,6 +82,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void updateUserPasswordAndRoles(String username, Map<String, String> form, User user) {
         user.setUsername(username);
         Set<String> roles = Arrays.stream(Role.values())
@@ -94,6 +98,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void updateUserBalance(Integer replenishmentAmount, User user) {
         user.setBalance(user.getBalance() + replenishmentAmount);
         updateUser(user);
@@ -106,6 +111,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void deleteUserTickets(Train train, User user) {
         user.setBalance(user.getBalance() + train.getPrice());
         user.getTrains().remove(train);
@@ -120,7 +126,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws BadCredentialsException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("Fetching a user by username: {}", username);
         User user = userRepo.findByUsername(username);
         if (user == null) {
