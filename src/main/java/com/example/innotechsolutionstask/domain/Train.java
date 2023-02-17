@@ -51,11 +51,11 @@ public class Train implements Serializable {
 
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_trains",
-            joinColumns = @JoinColumn(name = "trains_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+            name = "client_train",
+            joinColumns = @JoinColumn(name = "train_id"),
+            inverseJoinColumns = @JoinColumn(name = "client_id")
     )
-    private List<User> users = new ArrayList<>();
+    private List<Client> users = new ArrayList<>();
 
     public Train(String departurePoint, String arrivalPoint, String departureTime, String arrivalTime, String date, Integer price, Integer freePlaces) {
         this.departurePoint = departurePoint;

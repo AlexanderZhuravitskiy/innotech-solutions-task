@@ -1,8 +1,8 @@
 package com.example.innotechsolutionstask.controller;
 
+import com.example.innotechsolutionstask.domain.Client;
 import com.example.innotechsolutionstask.domain.Role;
-import com.example.innotechsolutionstask.domain.User;
-import com.example.innotechsolutionstask.service.UserService;
+import com.example.innotechsolutionstask.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -16,17 +16,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('ADMIN')")
 public class AdminController {
-    private final UserService userService;
+    private final ClientService clientService;
 
     @GetMapping("/users")
-    public String getUserList(Model model) {
-        List<User> userList = userService.getAllUsers();
+    public String getClientsList(Model model) {
+        List<Client> userList = clientService.getAllClients();
         model.addAttribute("users", userList);
         return "userList";
     }
 
     @GetMapping("/users/{user}")
-    public String editUser(@PathVariable User user,
+    public String editClient(@PathVariable Client user,
                            Model model) {
         model.addAttribute("user", user);
         model.addAttribute("roles", Role.values());
@@ -34,11 +34,11 @@ public class AdminController {
     }
 
     @PostMapping("/users/update")
-    public String saveUser(@RequestParam String username,
+    public String saveClient(@RequestParam String username,
                            @RequestParam Map<String, String> form,
-                           @RequestParam("userId") User user
+                           @RequestParam("userId") Client user
     ) {
-        userService.updateUserPasswordAndRoles(username, form, user);
+        clientService.updateClientUsernameAndRole(username, form, user);
         return "redirect:/users";
     }
 }

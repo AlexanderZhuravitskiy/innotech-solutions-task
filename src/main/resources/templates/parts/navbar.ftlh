@@ -25,7 +25,7 @@
                         <a class="nav-link" aria-current="page" href="/users/profile">My profile</a>
                     </li>
                 </#if>
-                <#if user??>
+                <#if user?? && !isAdmin>
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="/users/tickets">My tickets</a>
                     </li>

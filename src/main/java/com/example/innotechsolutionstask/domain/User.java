@@ -8,13 +8,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 
 @Data
 @Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @NoArgsConstructor
-@Table(name = "user")
-public class User implements UserDetails {
+public abstract class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
@@ -31,23 +32,14 @@ public class User implements UserDetails {
     @Column(name = "active")
     private boolean active;
 
-    @Column(name = "balance")
-    private Integer balance;
-
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_trains",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "trains_id")
-    )
-    private List<Train> trains = new ArrayList<>();
-
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    private Set<Role> roles = new HashSet<>();
+    private Role role;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singleton(getRole());
+    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -69,12 +61,5 @@ public class User implements UserDetails {
         return isActive();
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getRoles();
-    }
-
-    public boolean isAdmin() {
-        return roles.contains(Role.ADMIN);
-    }
+    public abstract boolean isAdmin();
 }

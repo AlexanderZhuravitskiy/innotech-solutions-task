@@ -1,9 +1,12 @@
 package com.example.innotechsolutionstask.controller;
 
+import com.example.innotechsolutionstask.domain.Admin;
+import com.example.innotechsolutionstask.domain.Client;
 import com.example.innotechsolutionstask.domain.Train;
 import com.example.innotechsolutionstask.domain.User;
 import com.example.innotechsolutionstask.dto.CaptchaResponseDto;
-import com.example.innotechsolutionstask.service.UserService;
+import com.example.innotechsolutionstask.service.AdminService;
+import com.example.innotechsolutionstask.service.ClientService;
 import com.example.innotechsolutionstask.web.constant.WebConstant;
 import com.example.innotechsolutionstask.web.handler.ControllerExceptionHandler;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,9 @@ import static com.example.innotechsolutionstask.web.constant.WebConstant.CAPTCHA
 @Controller
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
+    private final ClientService clientService;
+
+    private final AdminService adminService;
 
     private final RestTemplate restTemplate;
 
@@ -42,7 +47,7 @@ public class UserController {
     @PostMapping("/registration")
     public String addUser(@RequestParam String passwordRepeat,
                           @RequestParam("g-recaptcha-response") String captchaResponse,
-                          @Valid User user,
+                          @Valid Client user,
                           BindingResult bindingResult,
                           Model model) {
         String url = String.format(CAPTCHA_URL, secret, captchaResponse);
@@ -63,60 +68,65 @@ public class UserController {
             model.mergeAttributes(errors);
             return "registration";
         }
-        if (userService.getUserByUsername(user.getUsername()) != null) {
+        if (clientService.getClientByUsername(user.getUsername()) != null) {
             model.addAttribute("usernameError", "User exists!");
             return "registration";
         }
-        userService.createUser(user);
+        clientService.createClient(user);
         return "login";
     }
 
     @GetMapping("/users/tickets")
-    public String getUserTicketList(@AuthenticationPrincipal User user,
+    public String getUserTicketList(@AuthenticationPrincipal Client user,
                                     Model model
     ) {
-        User userFromDatabase = userService.getUserByUsername(user.getUsername());
+        Client userFromDatabase = clientService.getClientById(user.getId());
         model.addAttribute("trains", userFromDatabase.getTrains());
         return "userTickets";
     }
 
     @PostMapping("/users/tickets/add")
     public String buyTicket(@RequestParam("trainId") Train train,
-                            @AuthenticationPrincipal User user) {
-        User userFromDatabase = userService.getUserById(user.getId());
-        userService.addUserTickets(train, userFromDatabase);
+                            @AuthenticationPrincipal Client user) {
+        Client userFromDatabase = clientService.getClientById(user.getId());
+        clientService.addClientTicket(train, userFromDatabase);
         return "redirect:/main";
     }
 
     @PostMapping("/users/tickets/delete")
     public String retrieveTicket(@RequestParam("trainId") Train train,
-                                 @AuthenticationPrincipal User user) {
-        User userFromDatabase = userService.getUserById(user.getId());
-        userService.deleteUserTickets(train, userFromDatabase);
+                                 @AuthenticationPrincipal Client user) {
+        Client userFromDatabase = clientService.getClientById(user.getId());
+        clientService.deleteClientTicket(train, userFromDatabase);
         return "redirect:/users/tickets";
     }
 
     @GetMapping("/users/balance")
     public String getUserBalance(Model model,
-                                 @AuthenticationPrincipal User user) {
-        User userFromDatabase = userService.getUserById(user.getId());
+                                 @AuthenticationPrincipal Client user) {
+        Client userFromDatabase = clientService.getClientById(user.getId());
         model.addAttribute("user", userFromDatabase);
         return "balanceReplenishment";
     }
 
     @PostMapping("/users/balance/add")
     public String updateUserBalance(@RequestParam Integer replenishmentAmount,
-                                    @AuthenticationPrincipal User user) {
-        User userFromDatabase = userService.getUserById(user.getId());
-        userService.updateUserBalance(replenishmentAmount, userFromDatabase);
+                                    @AuthenticationPrincipal Client user) {
+        Client userFromDatabase = clientService.getClientById(user.getId());
+        clientService.updateClientBalance(replenishmentAmount, userFromDatabase);
         return "redirect:/users/balance";
     }
 
     @GetMapping("/users/profile")
-    public String getUser(Model model,
-                          @AuthenticationPrincipal User user) {
-        User userFromDatabase = userService.getUserById(user.getId());
-        model.addAttribute("username", userFromDatabase.getUsername());
+    public String getUser(@AuthenticationPrincipal User user,
+                          Model model) {
+        if(user.getClass() == Admin.class) {
+            Admin userFromDatabase = adminService.getAdminById(user.getId());
+            model.addAttribute("username", userFromDatabase.getUsername());
+        } else {
+            Client userFromDatabase = clientService.getClientById(user.getId());
+            model.addAttribute("username", userFromDatabase.getUsername());
+        }
         return "profile";
     }
 
@@ -124,8 +134,13 @@ public class UserController {
     public String updateUser(@AuthenticationPrincipal User user,
                              @RequestParam String password
     ) {
-        User userFromDatabase = userService.getUserById(user.getId());
-        userService.updatePassword(userFromDatabase, password);
+        if(user.getClass() == Admin.class) {
+            Admin userFromDatabase = adminService.getAdminById(user.getId());
+            adminService.updateAdminPassword(userFromDatabase, password);
+        } else {
+            Client userFromDatabase = clientService.getClientById(user.getId());
+            clientService.updateClientPassword(userFromDatabase, password);
+        }
         return "redirect:/users/profile";
     }
 }
