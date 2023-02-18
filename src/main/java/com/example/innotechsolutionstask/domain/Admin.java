@@ -16,6 +16,9 @@ import javax.persistence.UniqueConstraint;
         @UniqueConstraint(columnNames = "username")
 })
 public class Admin extends User {
+    public Admin(String username, String password, boolean active, Role role) {
+        super(username, password, active, role);
+    }
 
     @Override
     public boolean isAdmin() {

@@ -1,5 +1,6 @@
 package com.example.innotechsolutionstask.service.implementation;
 
+import com.example.innotechsolutionstask.domain.Admin;
 import com.example.innotechsolutionstask.domain.Client;
 import com.example.innotechsolutionstask.domain.Role;
 import com.example.innotechsolutionstask.domain.Train;
@@ -13,13 +14,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
     private final ClientRepo clientRepo;
+
+    private final AdminServiceImpl adminService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -81,15 +83,20 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     public void updateClientUsernameAndRole(String username, Map<String, String> form, Client user) {
         user.setUsername(username);
-        Set<String> roles = Arrays.stream(Role.values())
-                .map(Role::name)
-                .collect(Collectors.toSet());
+        boolean isRoleChanged = false;
         for (String key : form.keySet()) {
-            if (roles.contains(key)) {
-                user.setRole(Role.valueOf(key));
+            if (key.equals("checkbox")) {
+                isRoleChanged = true;
+                break;
             }
         }
-        updateClient(user);
+        if(isRoleChanged) {
+            Admin admin = new Admin(user.getUsername(), user.getPassword(), user.isActive(), Role.ADMIN);
+            adminService.addAdmin(admin);
+            deleteClient(user);
+        } else {
+            updateClient(user);
+        }
     }
 
     @Override

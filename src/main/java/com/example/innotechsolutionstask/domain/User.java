@@ -36,6 +36,13 @@ public abstract class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    public User(String username, String password, boolean active, Role role) {
+        this.username = username;
+        this.password = password;
+        this.active = active;
+        this.role = role;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(getRole());
