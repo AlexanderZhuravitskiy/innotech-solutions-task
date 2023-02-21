@@ -20,10 +20,12 @@
                     <#if train.freePlaces gt 0>
                         <i>Осталось мест: ${train.freePlaces}</i>
                         <br>
+                        <#if user?? && !isAdmin>
                         <form action="/users/tickets/${train.id}/add" method="post">
                             <input type="hidden" name="_csrf" value="${_csrf.token}"/>
                             <button class="btn btn-primary mt-1" type="submit">Buy</button>
                         </form>
+                        </#if>
                     <#else>
                         <i>Мест нет</i>
                     </#if>

@@ -34,8 +34,8 @@
         </div>
 
         <div class="navbar-text mr-3">${name}</div>
-        <#if user??>
-        <a href="/users/balance" class="navbar-text mr-3">Balance replenishment</a>
+        <#if user?? && !isAdmin>
+        <a href="/users/balance" class="navbar-text mr-3">Balance</a>
         </#if>
         <@l.logout />
     </div>
