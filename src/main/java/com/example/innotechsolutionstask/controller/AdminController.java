@@ -2,6 +2,7 @@ package com.example.innotechsolutionstask.controller;
 
 import com.example.innotechsolutionstask.domain.Client;
 import com.example.innotechsolutionstask.domain.Role;
+import com.example.innotechsolutionstask.dto.ClientDto;
 import com.example.innotechsolutionstask.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,25 +21,27 @@ public class AdminController {
 
     @GetMapping("/users")
     public String getClientsList(Model model) {
-        List<Client> userList = clientService.getAllClients();
+        List<ClientDto> userList = clientService.getAllClients();
         model.addAttribute("users", userList);
         return "userList";
     }
 
     @GetMapping("/users/{user}")
     public String editClient(@PathVariable Client user,
-                           Model model) {
-        model.addAttribute("user", user);
+                             Model model) {
+        ClientDto clientDto = clientService.getClientById(user.getId());
+        model.addAttribute("user", clientDto);
         model.addAttribute("roles", Role.values());
         return "userEdit";
     }
 
-    @PostMapping("/users/update")
-    public String saveClient(@RequestParam String username,
-                           @RequestParam Map<String, String> form,
-                           @RequestParam("userId") Client user
+    @PostMapping("/users/{user}/update")
+    public String saveClient(@PathVariable Client user,
+                             @RequestParam String username,
+                             @RequestParam Map<String, String> form
     ) {
-        clientService.updateClientUsernameAndRole(username, form, user);
+        ClientDto clientDto = clientService.getClientById(user.getId());
+        clientService.updateClientUsernameAndRole(username, form, clientDto);
         return "redirect:/users";
     }
 }

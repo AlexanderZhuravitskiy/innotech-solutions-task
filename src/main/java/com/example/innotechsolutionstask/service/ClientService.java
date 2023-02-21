@@ -2,39 +2,40 @@ package com.example.innotechsolutionstask.service;
 
 import com.example.innotechsolutionstask.domain.Client;
 import com.example.innotechsolutionstask.domain.Train;
+import com.example.innotechsolutionstask.dto.ClientDto;
 
 import java.util.List;
 import java.util.Map;
 
 public interface ClientService {
 
-    List<Client> getAllClients();
+    List<ClientDto> getAllClients();
 
-    Client getClientById(Long id);
+    ClientDto getClientById(Long id);
 
-    Client getClientByUsername(String username);
+    ClientDto getClientByUsername(String username);
 
-    void createClient(Client user);
+    void createClient(ClientDto clientDto);
 
     void addClientTicket(Train train,
-                         Client user);
+                         ClientDto clientDto);
 
-    void addClient(Client user);
+    void addClient(ClientDto clientDto);
 
-    void updateClientPassword(Client user,
+    void updateClientPassword(ClientDto clientDto,
                               String password);
 
     void updateClientUsernameAndRole(String username,
                                      Map<String, String> form,
-                                     Client user);
+                                     ClientDto clientDto);
 
     void updateClientBalance(Integer replenishmentAmount,
-                             Client user);
+                             ClientDto clientDto);
 
-    void updateClient(Client user);
+    void updateClient(ClientDto user);
 
     void deleteClientTicket(Train train,
-                            Client user);
+                            ClientDto clientDto);
 
-    void deleteClient(Client user);
+    void deleteClient(ClientDto clientDto);
 }

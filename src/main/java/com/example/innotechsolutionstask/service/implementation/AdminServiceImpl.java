@@ -2,7 +2,9 @@ package com.example.innotechsolutionstask.service.implementation;
 
 import com.example.innotechsolutionstask.domain.Admin;
 
+import com.example.innotechsolutionstask.dto.AdminDto;
 import com.example.innotechsolutionstask.exceptions.NotFoundException;
+import com.example.innotechsolutionstask.mapper.AdminMapper;
 import com.example.innotechsolutionstask.repos.AdminRepo;
 import com.example.innotechsolutionstask.service.AdminService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,42 +25,60 @@ public class AdminServiceImpl implements AdminService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final AdminMapper adminMapper;
+
     @Override
-    public List<Admin> getAllAdmins() {
-        log.info("Fetching a list of users");
-        return adminRepo.findAll();
+    public List<AdminDto> getAllAdmins() {
+        log.info("Fetching a list of admins");
+        List<Admin> adminList = adminRepo.findAll();
+        log.info("Received a list of admins: {}", adminList);
+        return adminList.stream()
+                .filter(Objects::nonNull)
+                .map(adminMapper::adminToAdminDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Admin getAdminById(Long id) {
-        log.info("Fetching a user by id: {}", id);
-        return adminRepo.findById(id).orElseThrow(() -> new NotFoundException("User with id: " + id + " not found"));
-    }
-
-    @Override
-    public void addAdmin(Admin user) {
-        log.info("Saving user: {}", user);
-        adminRepo.save(user);
+    public AdminDto getAdminById(Long id) {
+        log.info("Fetching a admin by id: {}", id);
+        Admin admin = adminRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Admin with id: " + id + " not found"));
+        log.info("Received admin: {}", admin);
+        return adminMapper.adminToAdminDto(admin);
     }
 
     @Override
     @Transactional
-    public void updateAdminPassword(Admin user, String password) {
+    public void addAdmin(AdminDto adminDto) {
+        Admin admin = adminMapper.adminDtoToAdmin(adminDto);
+        adminRepo.save(admin);
+        log.info("Saving admin: {}", admin);
+    }
+
+    @Override
+    @Transactional
+    public void updateAdminPassword(AdminDto adminDto, String password) {
         if (!password.isBlank()) {
-            user.setPassword(passwordEncoder.encode(password));
-            updateAdmin(user);
+            Admin admin = adminMapper.adminDtoToAdmin(adminDto);
+            admin.setPassword(passwordEncoder.encode(password));
+            adminRepo.save(admin);
+            log.info("Saving admin: {}", admin);
         }
     }
 
     @Override
-    public void updateAdmin(Admin user) {
-        log.info("Saving update user: {}", user);
-        adminRepo.save(user);
+    @Transactional
+    public void updateAdmin(AdminDto adminDto) {
+        Admin admin = adminMapper.adminDtoToAdmin(adminDto);
+        adminRepo.save(admin);
+        log.info("Saving update admin: {}", admin);
     }
 
     @Override
-    public void deleteAdmin(Admin user) {
-        log.info("Deleting user: {}", user);
-        adminRepo.delete(user);
+    @Transactional
+    public void deleteAdmin(AdminDto adminDto) {
+        Admin admin = adminMapper.adminDtoToAdmin(adminDto);
+        adminRepo.delete(admin);
+        log.info("Deleting admin: {}", admin);
     }
 }

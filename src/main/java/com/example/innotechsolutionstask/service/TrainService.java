@@ -1,28 +1,28 @@
 package com.example.innotechsolutionstask.service;
 
-import com.example.innotechsolutionstask.domain.Train;
+import com.example.innotechsolutionstask.dto.TrainDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface TrainService {
 
-    Page<Train> getAllTrains(Pageable pageable);
+    Page<TrainDto> getAllTrains(Pageable pageable);
 
-    Page<Train> getTrainList(String departurePointSearch,
+    Page<TrainDto> getTrainList(String departurePointSearch,
                              String arrivalPointSearch,
                              String dateSearch,
                              Pageable pageable);
 
-    Train getTrainById(Long id);
+    TrainDto getTrainById(Long id);
 
-    Page<Train> getTrainsByDeparturePointAndArrivalPointAndDate(String departurePoint,
+    Page<TrainDto> getTrainsByDeparturePointAndArrivalPointAndDate(String departurePoint,
                                                                String arrivalPoint,
                                                                String date,
                                                                Pageable pageable);
 
-    void addTrain(Train train);
+    void addTrain(TrainDto trainDto);
 
-    void updateTrain(Train train);
+    void updateTrain(TrainDto trainDto);
 
-    void deleteTrain(Train train);
+    void deleteTrain(TrainDto trainDto);
 }

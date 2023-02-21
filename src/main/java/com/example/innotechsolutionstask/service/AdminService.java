@@ -1,19 +1,19 @@
 package com.example.innotechsolutionstask.service;
 
-import com.example.innotechsolutionstask.domain.Admin;
+import com.example.innotechsolutionstask.dto.AdminDto;
 
 import java.util.List;
 
 public interface AdminService {
-    List<Admin> getAllAdmins();
+    List<AdminDto> getAllAdmins();
 
-    Admin getAdminById(Long id);
+    AdminDto getAdminById(Long id);
 
-    void addAdmin(Admin user);
+    void addAdmin(AdminDto adminDto);
 
-    void updateAdminPassword(Admin userFromDatabase, String password);
+    void updateAdminPassword(AdminDto adminDto, String password);
 
-    void updateAdmin(Admin user);
+    void updateAdmin(AdminDto adminDto);
 
-    void deleteAdmin(Admin user);
+    void deleteAdmin(AdminDto adminDto);
 }

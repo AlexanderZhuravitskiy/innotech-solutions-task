@@ -1,6 +1,8 @@
 package com.example.innotechsolutionstask.controller;
 
 import com.example.innotechsolutionstask.domain.Train;
+import com.example.innotechsolutionstask.dto.TrainDto;
+import com.example.innotechsolutionstask.mapper.TrainMapper;
 import com.example.innotechsolutionstask.service.TrainService;
 import com.example.innotechsolutionstask.web.handler.ControllerExceptionHandler;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,8 @@ import java.util.Map;
 public class TrainController {
     private final TrainService trainService;
 
+    private final TrainMapper trainMapper;
+
     @GetMapping
     public String greeting() {
         return "greeting";
@@ -34,7 +38,7 @@ public class TrainController {
                                @RequestParam(required = false, defaultValue = "") String dateSearch,
                                Model model,
                                @PageableDefault(sort = { "id" }, direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<Train> page = trainService.getTrainList(departurePointSearch, arrivalPointSearch, dateSearch, pageable);
+        Page<TrainDto> page = trainService.getTrainList(departurePointSearch, arrivalPointSearch, dateSearch, pageable);
         model.addAttribute("page", page);
         model.addAttribute("url", "/main");
         model.addAttribute("departurePointSearch", departurePointSearch);
@@ -48,15 +52,16 @@ public class TrainController {
                            BindingResult bindingResult,
                            Model model,
                            @PageableDefault(sort = { "id" }, direction = Sort.Direction.DESC) Pageable pageable) {
+        TrainDto trainDto = trainMapper.trainToTrainDto(train);
         if(bindingResult.hasErrors()) {
             Map<String, String> errorsMap = ControllerExceptionHandler.getErrors(bindingResult);
             model.mergeAttributes(errorsMap);
-            model.addAttribute("train", train);
+            model.addAttribute("train", trainDto);
         } else {
             model.addAttribute("train", null);
-            trainService.addTrain(train);
+            trainService.addTrain(trainDto);
         }
-        Page<Train> page = trainService.getAllTrains(pageable);
+        Page<TrainDto> page = trainService.getAllTrains(pageable);
         model.addAttribute("page", page);
         model.addAttribute("url", "/main");
         return "main";

@@ -20,8 +20,7 @@
                     <#if train.freePlaces gt 0>
                         <i>Осталось мест: ${train.freePlaces}</i>
                         <br>
-                        <form action="/users/tickets/add" method="post">
-                            <input type="hidden" value="${train.id}" name="trainId">
+                        <form action="/users/tickets/${train.id}/add" method="post">
                             <input type="hidden" name="_csrf" value="${_csrf.token}"/>
                             <button class="btn btn-primary mt-1" type="submit">Buy</button>
                         </form>

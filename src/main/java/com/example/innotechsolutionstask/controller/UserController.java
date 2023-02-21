@@ -4,7 +4,10 @@ import com.example.innotechsolutionstask.domain.Admin;
 import com.example.innotechsolutionstask.domain.Client;
 import com.example.innotechsolutionstask.domain.Train;
 import com.example.innotechsolutionstask.domain.User;
+import com.example.innotechsolutionstask.dto.AdminDto;
 import com.example.innotechsolutionstask.dto.CaptchaResponseDto;
+import com.example.innotechsolutionstask.dto.ClientDto;
+import com.example.innotechsolutionstask.mapper.ClientMapper;
 import com.example.innotechsolutionstask.service.AdminService;
 import com.example.innotechsolutionstask.service.ClientService;
 import com.example.innotechsolutionstask.web.constant.WebConstant;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
@@ -35,6 +39,8 @@ public class UserController {
 
     private final RestTemplate restTemplate;
 
+    private final ClientMapper clientMapper;
+
     @Value("${recaptcha.secret}")
     private String secret;
 
@@ -50,6 +56,7 @@ public class UserController {
                           @Valid Client user,
                           BindingResult bindingResult,
                           Model model) {
+        ClientDto clientDto = clientMapper.clientToClientDto(user);
         String url = String.format(CAPTCHA_URL, secret, captchaResponse);
         CaptchaResponseDto response = restTemplate.postForObject(url, Collections.emptyList(), CaptchaResponseDto.class);
         if (response != null && !response.isSuccess()) {
@@ -59,7 +66,7 @@ public class UserController {
         if (isConfirmEmpty) {
             model.addAttribute("passwordRepeatError", WebConstant.BLANK_FIELD_MESSAGE);
         }
-        if (user.getPassword() != null && !user.getPassword().equals(passwordRepeat)) {
+        if (clientDto.getPassword() != null && !clientDto.getPassword().equals(passwordRepeat)) {
             model.addAttribute("passwordError", "Passwords are different!");
             return "registration";
         }
@@ -68,11 +75,11 @@ public class UserController {
             model.mergeAttributes(errors);
             return "registration";
         }
-        if (clientService.getClientByUsername(user.getUsername()) != null) {
+        if (clientService.getClientByUsername(clientDto.getUsername()) != null) {
             model.addAttribute("usernameError", "User exists!");
             return "registration";
         }
-        clientService.createClient(user);
+        clientService.createClient(clientDto);
         return "login";
     }
 
@@ -80,40 +87,40 @@ public class UserController {
     public String getUserTicketList(@AuthenticationPrincipal Client user,
                                     Model model
     ) {
-        Client userFromDatabase = clientService.getClientById(user.getId());
-        model.addAttribute("trains", userFromDatabase.getTrains());
+        ClientDto clientDto = clientService.getClientById(user.getId());
+        model.addAttribute("trains", clientDto.getTrains());
         return "userTickets";
     }
 
-    @PostMapping("/users/tickets/add")
-    public String buyTicket(@RequestParam("trainId") Train train,
+    @PostMapping("/users/tickets/{train}/add")
+    public String addTicket(@PathVariable Train train,
                             @AuthenticationPrincipal Client user) {
-        Client userFromDatabase = clientService.getClientById(user.getId());
-        clientService.addClientTicket(train, userFromDatabase);
+        ClientDto clientDto = clientService.getClientById(user.getId());
+        clientService.addClientTicket(train, clientDto);
         return "redirect:/main";
     }
 
-    @PostMapping("/users/tickets/delete")
-    public String retrieveTicket(@RequestParam("trainId") Train train,
-                                 @AuthenticationPrincipal Client user) {
-        Client userFromDatabase = clientService.getClientById(user.getId());
-        clientService.deleteClientTicket(train, userFromDatabase);
+    @PostMapping("/users/tickets/{train}/delete")
+    public String deleteTicket(@PathVariable Train train,
+                               @AuthenticationPrincipal Client user) {
+        ClientDto clientDto = clientService.getClientById(user.getId());
+        clientService.deleteClientTicket(train, clientDto);
         return "redirect:/users/tickets";
     }
 
     @GetMapping("/users/balance")
-    public String getUserBalance(Model model,
-                                 @AuthenticationPrincipal Client user) {
-        Client userFromDatabase = clientService.getClientById(user.getId());
-        model.addAttribute("user", userFromDatabase);
+    public String getUserBalance(@AuthenticationPrincipal Client user,
+                                 Model model) {
+        ClientDto clientDto = clientService.getClientById(user.getId());
+        model.addAttribute("user", clientDto);
         return "balanceReplenishment";
     }
 
     @PostMapping("/users/balance/add")
     public String updateUserBalance(@RequestParam Integer replenishmentAmount,
                                     @AuthenticationPrincipal Client user) {
-        Client userFromDatabase = clientService.getClientById(user.getId());
-        clientService.updateClientBalance(replenishmentAmount, userFromDatabase);
+        ClientDto clientDto = clientService.getClientById(user.getId());
+        clientService.updateClientBalance(replenishmentAmount, clientDto);
         return "redirect:/users/balance";
     }
 
@@ -121,11 +128,11 @@ public class UserController {
     public String getUser(@AuthenticationPrincipal User user,
                           Model model) {
         if(user.getClass() == Admin.class) {
-            Admin userFromDatabase = adminService.getAdminById(user.getId());
-            model.addAttribute("username", userFromDatabase.getUsername());
+            AdminDto adminDto = adminService.getAdminById(user.getId());
+            model.addAttribute("username", adminDto.getUsername());
         } else {
-            Client userFromDatabase = clientService.getClientById(user.getId());
-            model.addAttribute("username", userFromDatabase.getUsername());
+            ClientDto clientDto = clientService.getClientById(user.getId());
+            model.addAttribute("username", clientDto.getUsername());
         }
         return "profile";
     }
@@ -135,11 +142,11 @@ public class UserController {
                              @RequestParam String password
     ) {
         if(user.getClass() == Admin.class) {
-            Admin userFromDatabase = adminService.getAdminById(user.getId());
-            adminService.updateAdminPassword(userFromDatabase, password);
+            AdminDto adminDto = adminService.getAdminById(user.getId());
+            adminService.updateAdminPassword(adminDto, password);
         } else {
-            Client userFromDatabase = clientService.getClientById(user.getId());
-            clientService.updateClientPassword(userFromDatabase, password);
+            ClientDto clientDto = clientService.getClientById(user.getId());
+            clientService.updateClientPassword(clientDto, password);
         }
         return "redirect:/users/profile";
     }

@@ -14,8 +14,7 @@
                         <br>
                         <i>Прибытие: ${train.arrivalTime} ${train.date}</i>
                         <br>
-                        <form action="/users/tickets/delete" method="post">
-                            <input type="hidden" value="${train.id}" name="trainId">
+                        <form action="/users/tickets/${train.id}/delete" method="post">
                             <input type="hidden" name="_csrf" value="${_csrf.token}"/>
                             <button class="btn btn-primary mt-1" type="submit">Return</button>
                         </form>
